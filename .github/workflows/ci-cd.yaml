@@ -41,10 +41,10 @@ jobs:
 
 
   Deploy:
-      - name: instance deploy
-        runs-on: self-hosted
-        needs: Build
-        steps:
+    name: instance deploy
+    runs-on: self-hosted
+    needs: Build
+    steps:
       - name: checkout repository
         uses: actions/checkout@v4
       - name: set up node js
