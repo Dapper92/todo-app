@@ -18,7 +18,7 @@ jobs:
       # assigning a random number as version
       - name: generate a random version
         run: |
-          APP_VERSION=${{RANDOM}}
+          APP_VERSION=$((RANDOM))
           echo "APP_VERSION=${APP_VERSION}" >> GITHUB.ENV
 
       - name: Create app_version.txt
