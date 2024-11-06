@@ -5,10 +5,10 @@ on:
       - master
 jobs:
   Build:
-  name: instance build
-  if: github.ref == 'refs/heads/master'
-  runs-on: ubuntu-latest
-  steps:
+    name: instance build
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
