@@ -76,7 +76,7 @@ jobs:
         run: |
           docker load -i test-image_${{ env.APP_VERSION }}.tar
 
-      - name: Run Docker Container
+      - name: Run Docker Containers
         env:
           image_name: test-image
           APP_VERSION: ${{ env.APP_VERSION }} 
