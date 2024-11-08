@@ -23,22 +23,22 @@ jobs:
           TIMESTAMP=$(date +'%Y%m%d%H%M%S')
           VERSION="v${TIMESTAMP}_${RANDOM}"
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
-          echo "::set-output name=version::$VERSION"
-
+          echo "version=$VERSION" >> $GITHUB_ENV  # Set the version as a GitHub environment variable
+          
       - name: Build the Docker Image
         env:
           image_name: test-image
           username: dapper01
-          APP_VERSION: ${{ steps.version.outputs.version }}
+          APP_VERSION: ${{ env.APP_VERSION }}  # Use the environment variable for version
         run: |
           docker build -t $username/$image_name:${{ env.APP_VERSION }} .
-          docker save -o $image_name_${{ env.APP_VERSION }}.tar $username/$image_name:${{ env.APP_VERSION }}
+          docker save -o test-image_${{ env.APP_VERSION }}.tar $username/$image_name:${{ env.APP_VERSION }}
 
       - name: Upload Docker Image as Artifact
         uses: actions/upload-artifact@v3
         with:
           name: docker-image
-          path: test-image_${{ steps.version.outputs.version }}.tar
+          path: test-image_${{ env.APP_VERSION }}.tar  # Match the saved tar file name with the upload path
 
       - name: Send email notification
         uses: dawidd6/action-send-mail@v3
@@ -53,7 +53,9 @@ jobs:
           from: "loveth senior devops"
           body: |
             Hello,
-            The latest version of the Docker image (version: ${{ steps.version.outputs.version }}) has been built and saved as an artifact.
+            The latest version of the Docker image (version: ${{ env.APP_VERSION }}) has been built and saved as an artifact.
+
+  # Uncomment and use the following for the deploy job:
 
   # Deploy:
   #   name: Deploy Docker Image
@@ -70,14 +72,14 @@ jobs:
   #     - name: Load Docker Image
   #       env:
   #         image_name: test-image
-  #         APP_VERSION: ${{ needs.Build.outputs.app_version }}
+  #         APP_VERSION: ${{ env.APP_VERSION }}  # Ensure you're using the correct version
   #       run: |
-  #         docker load -i $image_name_${{ needs.Build.outputs.app_version }}.tar
+  #         docker load -i test-image_${{ env.APP_VERSION }}.tar
 
   #     - name: Run Docker Container
   #       env:
   #         image_name: test-image
-  #         APP_VERSION: ${{ needs.Build.outputs.app_version }}
+  #         APP_VERSION: ${{ env.APP_VERSION }}  # Ensure you're using the correct version
   #       run: |
   #         docker run -d -p 8081:80 $image_name:${{ env.APP_VERSION }}
 
@@ -94,4 +96,4 @@ jobs:
   #         from: "prcenturionboy@gmail.com"
   #         body: |
   #           Hello,
-  #           The latest version of the Docker image (version: ${{ needs.Build.outputs.app_version }}) has been deployed from the artifact.
+  #           The latest version of the Docker image (version: ${{ env.APP_VERSION }}) has been deployed from the artifact.
