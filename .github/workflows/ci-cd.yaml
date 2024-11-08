@@ -35,7 +35,7 @@ jobs:
           docker save -o test-image_${{ env.APP_VERSION }}.tar $username/$image_name:${{ env.APP_VERSION }}
 
       - name: Upload Docker Image as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image
           path: test-image_${{ env.APP_VERSION }}.tar  # Match the saved tar file name with the upload path
@@ -55,45 +55,45 @@ jobs:
             Hello,
             The latest version of the Docker image (version: ${{ env.APP_VERSION }}) has been built and saved as an artifact.
 
-  # Uncomment and use the following for the deploy job:
+  
 
-  # Deploy:
-  #   name: Deploy Docker Image
-  #   if: github.ref == 'refs/heads/master'
-  #   runs-on: self-hosted
-  #   needs: Build
-  #   steps:
-  #     - name: Download Docker Image Artifact
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: docker-image
-  #         path: .
+  Deploy:
+    name: Deploy Docker Image
+    if: github.ref == 'refs/heads/master'
+    runs-on: self-hosted
+    needs: Build
+    steps:
+      - name: Download Docker Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: .
 
-  #     - name: Load Docker Image
-  #       env:
-  #         image_name: test-image
-  #         APP_VERSION: ${{ env.APP_VERSION }}  # Ensure you're using the correct version
-  #       run: |
-  #         docker load -i test-image_${{ env.APP_VERSION }}.tar
+      - name: Load Docker Image
+        env:
+          image_name: test-image
+          APP_VERSION: ${{ env.APP_VERSION }} 
+        run: |
+          docker load -i test-image_${{ env.APP_VERSION }}.tar
 
-  #     - name: Run Docker Container
-  #       env:
-  #         image_name: test-image
-  #         APP_VERSION: ${{ env.APP_VERSION }}  # Ensure you're using the correct version
-  #       run: |
-  #         docker run -d -p 8081:80 $image_name:${{ env.APP_VERSION }}
+      - name: Run Docker Container
+        env:
+          image_name: test-image
+          APP_VERSION: ${{ env.APP_VERSION }} 
+        run: |
+          docker run -d -p 8081:80 $image_name:${{ env.APP_VERSION }}
 
-  #     - name: Send email notification
-  #       uses: dawidd6/action-send-mail@v3
-  #       with:
-  #         server_address: smtp.gmail.com
-  #         server_port: 465
-  #         secure: true
-  #         username: prcenturionboy@gmail.com
-  #         password: ${{ secrets.EMAIL_PASSWORD }}
-  #         subject: "Docker Image Deployed from Artifact"
-  #         to: "dewcapontaareh@gmail.com"
-  #         from: "prcenturionboy@gmail.com"
-  #         body: |
-  #           Hello,
-  #           The latest version of the Docker image (version: ${{ env.APP_VERSION }}) has been deployed from the artifact.
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: oladapper@gmail.com
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Docker Image Deployed from Artifact"
+          to: "oladapolawal12@yahoo.com"
+          from: "Mr david agba devops"
+          body: |
+            Hello,
+            The latest version of the Docker image (version: ${{ env.APP_VERSION }}) has been deployed from the artifact.
