@@ -50,7 +50,7 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Docker Image Built and Saved"
           to: "oladapolawal12@yahoo.com"
-          from: "loveth senior devops"
+          from: "Mr David Agba DevOps"
           body: |
             Hello,
             The latest version of the Docker image (version: ${{ env.APP_VERSION }}) has been built and saved as an artifact.
