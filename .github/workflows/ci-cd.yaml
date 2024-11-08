@@ -52,7 +52,7 @@ jobs:
           to: "oladapolawal12@yahoo.com"
           from: "Mr David Agba DevOps"
           body: |
-            Hello,
+            Hello
             The latest version of the Docker image (version: ${{ env.APP_VERSION }}) has been built and saved as an artifact.
 
   
