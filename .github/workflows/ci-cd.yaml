@@ -1,11 +1,13 @@
-name: todo-app
+name: CI
+
 on:
   push:
     branches:
       - master
+
 jobs:
   Build:
-    name: instance build
+    name: instance-build
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
@@ -13,52 +15,83 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Greet User
-        run: |
-          echo "Welcome"
-      # assigning a random number as version
-      - name: generate a random version
-        run: |
-          APP_VERSION=$((RANDOM))
-          echo "APP_VERSION=${APP_VERSION}" >> GITHUB.ENV
+        run: echo "Welcome"
 
-      - name: Create app_version.txt
+      - name: Generate Version Number
+        id: version
         run: |
-          echo "Version: $version" > app_version.txt
+          TIMESTAMP=$(date +'%Y%m%d%H%M%S')
+          VERSION="v${TIMESTAMP}_${RANDOM}"
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "::set-output name=version::$VERSION"
 
-      - name: Upload Artifact
+      - name: Build the Docker Image
+        env:
+          image_name: test-image
+          username: dapper01
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          docker build -t $username/$image_name:${{ env.APP_VERSION }} .
+          docker save -o $image_name_${{ env.APP_VERSION }}.tar $username/$image_name:${{ env.APP_VERSION }}
+
+      - name: Upload Docker Image as Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: app_version
-          path: app_version.txt
-      - name: set up node js
-        uses: actions/setup-node@v4
-        with:      
-          node-version: 20
-      
+          name: docker-image
+          path: test-image_${{ steps.version.outputs.version }}.tar
 
-      - name: Install dependencies
-        run: npm install             
-      -  name: Run Tests
-         run: |
-              
-           
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: oladapper@gmail.com
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Docker Image Built and Saved"
+          to: "oladapolawal12@yahoo.com"
+          from: "loveth senior devops"
+          body: |
+            Hello,
+            The latest version of the Docker image (version: ${{ steps.version.outputs.version }}) has been built and saved as an artifact.
 
+  # Deploy:
+  #   name: Deploy Docker Image
+  #   if: github.ref == 'refs/heads/master'
+  #   runs-on: self-hosted
+  #   needs: Build
+  #   steps:
+  #     - name: Download Docker Image Artifact
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: docker-image
+  #         path: .
 
-  Deploy:
-    name: instance deploy
-    runs-on: self-hosted
-    needs: Build
-    steps:
-      - name: checkout repository
-        uses: actions/checkout@v4
-      - name: set up node js
-        uses: actions/checkout@v4
-        with: 
-           node-version: 20
+  #     - name: Load Docker Image
+  #       env:
+  #         image_name: test-image
+  #         APP_VERSION: ${{ needs.Build.outputs.app_version }}
+  #       run: |
+  #         docker load -i $image_name_${{ needs.Build.outputs.app_version }}.tar
 
-      - name: install dependencies
-        run: npm run
+  #     - name: Run Docker Container
+  #       env:
+  #         image_name: test-image
+  #         APP_VERSION: ${{ needs.Build.outputs.app_version }}
+  #       run: |
+  #         docker run -d -p 8081:80 $image_name:${{ env.APP_VERSION }}
 
-
-
-     
+  #     - name: Send email notification
+  #       uses: dawidd6/action-send-mail@v3
+  #       with:
+  #         server_address: smtp.gmail.com
+  #         server_port: 465
+  #         secure: true
+  #         username: prcenturionboy@gmail.com
+  #         password: ${{ secrets.EMAIL_PASSWORD }}
+  #         subject: "Docker Image Deployed from Artifact"
+  #         to: "dewcapontaareh@gmail.com"
+  #         from: "prcenturionboy@gmail.com"
+  #         body: |
+  #           Hello,
+  #           The latest version of the Docker image (version: ${{ needs.Build.outputs.app_version }}) has been deployed from the artifact.
