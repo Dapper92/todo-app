@@ -57,7 +57,7 @@ jobs:
            node-version: 20
 
       - name: install dependencies
-        run: npm 
+        run: npm run
 
 
 
