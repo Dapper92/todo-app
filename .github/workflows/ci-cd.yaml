@@ -37,10 +37,52 @@ jobs:
           path: test-image_${{ env.APP_VERSION }}.tar
 
     outputs:
-      app_version: ${{ steps.version.outputs.app_version }}
+      app_version: ${{ steps.version.outputs.app_version }}  # This should be aligned correctly
 
   Deploy:
     name: Deploy Docker Image
     runs-on: self-hosted
     needs: Build
-    ste
+    steps:
+      - name: Download Docker Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: .
+
+      - name: Verify Artifact Download
+        run: |
+          ls -al
+          if [ -f "test-image_${{ needs.Build.outputs.app_version }}.tar" ]; then
+            echo "Artifact found"
+          else
+            echo "Artifact not found"
+            exit 1
+          fi
+
+      - name: Load Docker Image
+        run: |
+          docker load -i test-image_${{ needs.Build.outputs.app_version }}.tar
+
+      - name: Verify Loaded Docker Image
+        run: |
+          docker images  # Ensure the image is loaded successfully
+
+      - name: Run Docker Containers
+        run: |
+          docker run -d -p 8081:80 test-image:${{ needs.Build.outputs.app_version }}
+
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: oladapper@gmail.com
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Docker Image Deployed from Artifact"
+          to: "oladapolawal12@yahoo.com"
+          from: "Mr David Agba DevOps"
+          body: |
+            Hello,
+            The latest version of the Docker image (version: ${{ needs.Build.outputs.app_version }}) has been deployed from the artifact.
