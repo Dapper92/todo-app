@@ -22,9 +22,7 @@ jobs:
         run: |
           TIMESTAMP=$(date +'%Y%m%d%H%M%S')
           VERSION="v${TIMESTAMP}_${RANDOM}"
-          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
-
-          
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV 
           
       - name: Build the Docker Image
         env:
@@ -75,10 +73,10 @@ jobs:
 
       - name: Load Docker Image
         env:
-          image_name: test-image
-          APP_VERSION: ${{ env.APP_VERSION }} 
-        run: |
-          docker load -i test-image_${{ env.APP_VERSION }}.tar
+        image_name: test-image
+        APP_VERSION: ${{ env.APP_VERSION }}  
+         run: |
+    docker load -i test-image_${{ env.APP_VERSION }}.tar
 
       - name: Run Docker Containers
         env:
