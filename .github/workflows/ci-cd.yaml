@@ -40,10 +40,10 @@ jobs:
       app_version: ${{ steps.version.outputs.app_version }}  
 
   
-  Deploy:
+   Deploy:
     name: Deploy Docker Image
     runs-on: self-hosted
-    needs: Build  # Ensure Deploy runs after Build job
+    needs: Build  
     steps:
       - name: Download Docker Image Artifact
         uses: actions/download-artifact@v4
@@ -62,23 +62,16 @@ jobs:
           fi
 
       - name: Load Docker Image
-        env:
-          image_name: test-image
-          APP_VERSION: ${{ needs.Build.outputs.app_version }}  # Use version output from Build job
         run: |
-          if [ -f "test-image_${{ needs.Build.outputs.app_version }}.tar" ]; then
-            docker load -i test-image_${{ needs.Build.outputs.app_version }}.tar
-          else
-            echo "File test-image_${{ needs.Build.outputs.app_version }}.tar not found, aborting."
-            exit 1
-          fi
+          docker load -i test-image_${{ needs.Build.outputs.app_version }}.tar
+
+      - name: Verify Loaded Docker Image
+        run: |
+          docker images  # Ensure the image is loaded successfully
 
       - name: Run Docker Containers
-        env:
-          image_name: test-image
-          APP_VERSION: ${{ needs.Build.outputs.app_version }}  
         run: |
-          docker run -d -p 8081:80 $image_name:${{ needs.Build.outputs.app_version }}
+          docker run -d -p 8081:80 test-image:${{ needs.Build.outputs.app_version }}
 
       - name: Send email notification
         uses: dawidd6/action-send-mail@v3
