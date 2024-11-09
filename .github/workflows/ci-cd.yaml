@@ -13,27 +13,19 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3  # Ensure this is correctly written
-        with:
-          node-version: '18'  # Specify the Node.js version you want to use
-
-      - name: Greet User
-        run: echo "Welcome"
-
       - name: Generate Version Number
         id: version
         run: |
           TIMESTAMP=$(date +'%Y%m%d%H%M%S')
           VERSION="v${TIMESTAMP}_${RANDOM}"
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
-          echo "version=$VERSION" >> $GITHUB_ENV
+          echo "::set-output name=version::$VERSION"  
 
       - name: Build the Docker Image
         env:
           image_name: test-image
           username: dapper01
-          APP_VERSION: ${{ env.APP_VERSION }}
+          APP_VERSION: ${{ steps.version.outputs.version }}  
         run: |
           docker build -t $username/$image_name:${{ env.APP_VERSION }} .
           docker save -o test-image_${{ env.APP_VERSION }}.tar $username/$image_name:${{ env.APP_VERSION }}
@@ -44,25 +36,13 @@ jobs:
           name: docker-image
           path: test-image_${{ env.APP_VERSION }}.tar
 
-      - name: Send email notification
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: oladapper@gmail.com
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "Docker Image Built and Saved"
-          to: "oladapolawal12@yahoo.com"
-          from: "Mr David Agba DevOps"
-          body: |
-            Hello,
-            The latest version of the Docker image (version: ${{ env.APP_VERSION }}) has been built and saved as an artifact.
+    outputs:
+      app_version: ${{ steps.version.outputs.version }}  
 
   Deploy:
     name: Deploy Docker Image
     runs-on: self-hosted
-    needs: Build
+    needs: Build  # Ensure Deploy runs after Build job
     steps:
       - name: Download Docker Image Artifact
         uses: actions/download-artifact@v4
@@ -73,7 +53,7 @@ jobs:
       - name: Verify Artifact Download
         run: |
           ls -al
-          if [ -f "test-image_${{ env.APP_VERSION }}.tar" ]; then
+          if [ -f "test-image_${{ needs.Build.outputs.app_version }}.tar" ]; then
             echo "Artifact found"
           else
             echo "Artifact not found"
@@ -83,33 +63,18 @@ jobs:
       - name: Load Docker Image
         env:
           image_name: test-image
-          APP_VERSION: ${{ env.APP_VERSION }}
+          APP_VERSION: ${{ needs.Build.outputs.app_version }} 
         run: |
-          if [ -f "test-image_${{ env.APP_VERSION }}.tar" ]; then
-            docker load -i test-image_${{ env.APP_VERSION }}.tar
+          if [ -f "test-image_${{ needs.Build.outputs.app_version }}.tar" ]; then
+            docker load -i test-image_${{ needs.Build.outputs.app_version }}.tar
           else
-            echo "File test-image_${{ env.APP_VERSION }}.tar not found, aborting."
+            echo "File test-image_${{ needs.Build.outputs.app_version }}.tar not found, aborting."
             exit 1
           fi
 
       - name: Run Docker Containers
         env:
           image_name: test-image
-          APP_VERSION: ${{ env.APP_VERSION }}
+          APP_VERSION: ${{ needs.Build.outputs.app_version }} 
         run: |
-          docker run -d -p 8081:80 $image_name:${{ env.APP_VERSION }}
-
-      - name: Send email notification
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: oladapper@gmail.com
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "Docker Image Deployed from Artifact"
-          to: "oladapolawal12@yahoo.com"
-          from: "Mr david agba devOps"
-          body: |
-            Hello,
-            The latest version of the Docker image (version: ${{ env.APP_VERSION }}) has been deployed from the artifact.
+          docker run -d -p 8081:80 $image_name:${{ needs.Build.outputs.app_version }}
