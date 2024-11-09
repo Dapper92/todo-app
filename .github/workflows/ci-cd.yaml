@@ -24,7 +24,11 @@ jobs:
           VERSION="v${TIMESTAMP}_${RANDOM}"
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
 
-          
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+        node-version: '18'  # or another stable version that doesn't have deprecated Buffer() usage
+
           
       - name: Build the Docker Image
         env:
