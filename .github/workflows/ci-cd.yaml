@@ -8,11 +8,15 @@ on:
 jobs:
   Build:
     name: instance-build
-    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3  # Ensure this is correctly written
+        with:
+          node-version: '18'  # Specify the Node.js version you want to use
 
       - name: Greet User
         run: echo "Welcome"
@@ -23,13 +27,8 @@ jobs:
           TIMESTAMP=$(date +'%Y%m%d%H%M%S')
           VERSION="v${TIMESTAMP}_${RANDOM}"
           echo "APP_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "version=$VERSION" >> $GITHUB_ENV
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-        node-version: '18'  # or another stable version that doesn't have deprecated Buffer() usage
-
-          
       - name: Build the Docker Image
         env:
           image_name: test-image
@@ -57,14 +56,11 @@ jobs:
           to: "oladapolawal12@yahoo.com"
           from: "Mr David Agba DevOps"
           body: |
-            Hello
+            Hello,
             The latest version of the Docker image (version: ${{ env.APP_VERSION }}) has been built and saved as an artifact.
-
-  
 
   Deploy:
     name: Deploy Docker Image
-    if: github.ref == 'refs/heads/master'
     runs-on: self-hosted
     needs: Build
     steps:
@@ -74,20 +70,32 @@ jobs:
           name: docker-image
           path: .
 
-      - name: List downloaded files
-        run: ls -al
+      - name: Verify Artifact Download
+        run: |
+          ls -al
+          if [ -f "test-image_${{ env.APP_VERSION }}.tar" ]; then
+            echo "Artifact found"
+          else
+            echo "Artifact not found"
+            exit 1
+          fi
 
       - name: Load Docker Image
         env:
           image_name: test-image
-          APP_VERSION: ${{ env.APP_VERSION }} 
+          APP_VERSION: ${{ env.APP_VERSION }}
         run: |
-          docker load -i test-image_${{ env.APP_VERSION }}.tar
+          if [ -f "test-image_${{ env.APP_VERSION }}.tar" ]; then
+            docker load -i test-image_${{ env.APP_VERSION }}.tar
+          else
+            echo "File test-image_${{ env.APP_VERSION }}.tar not found, aborting."
+            exit 1
+          fi
 
       - name: Run Docker Containers
         env:
           image_name: test-image
-          APP_VERSION: ${{ env.APP_VERSION }} 
+          APP_VERSION: ${{ env.APP_VERSION }}
         run: |
           docker run -d -p 8081:80 $image_name:${{ env.APP_VERSION }}
 
