@@ -29,7 +29,7 @@ jobs:
         env:
           image_name: test-image
           username: dapper01
-          APP_VERSION: ${{ env.APP_VERSION }}  # Use the environment variable for version
+          APP_VERSION: ${{ env.APP_VERSION }}
         run: |
           docker build -t $username/$image_name:${{ env.APP_VERSION }} .
           docker save -o test-image_${{ env.APP_VERSION }}.tar $username/$image_name:${{ env.APP_VERSION }}
@@ -38,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: docker-image
-          path: test-image_${{ env.APP_VERSION }}.tar  # Match the saved tar file name with the upload path
+          path: test-image_${{ env.APP_VERSION }}.tar
 
       - name: Send email notification
         uses: dawidd6/action-send-mail@v3
@@ -93,7 +93,7 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Docker Image Deployed from Artifact"
           to: "oladapolawal12@yahoo.com"
-          from: "Mr david agba devops"
+          from: "Mr david agba devOps"
           body: |
             Hello,
             The latest version of the Docker image (version: ${{ env.APP_VERSION }}) has been deployed from the artifact.
