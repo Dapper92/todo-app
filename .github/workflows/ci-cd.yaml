@@ -73,8 +73,8 @@ jobs:
 
       - name: Load Docker Image
         env:
-        image_name: test-image
-        APP_VERSION: ${{ env.APP_VERSION }} 
+          image_name: test-image
+          APP_VERSION: ${{ env.APP_VERSION }} 
         run: |
           docker load -i test-image_${{ env.APP_VERSION }}.tar
 
