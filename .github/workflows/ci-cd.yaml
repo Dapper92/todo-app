@@ -61,11 +61,11 @@ jobs:
            fi
 
       - name: Load Docker Image
-          run: |
+        run: |
             docker load -i test-image_${{ needs.Build.outputs.app_version }}.tar
 
       - name: Verify Loaded Docker Image
-      run: |
+        run: |
         docker images
 
       - name: Run Docker Containers
