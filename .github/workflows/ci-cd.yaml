@@ -71,8 +71,7 @@ jobs:
         run: |
           docker images
 
-      - name: 
-        Debug: Print Image Details
+      - name: Print Image Details
         run: |
           echo "username: $username"
           echo "image_name: $image_name"
