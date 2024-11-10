@@ -55,12 +55,12 @@ jobs:
 
       - name: Verify Artifact Download
         run: |
-          ls -al
+           ls -al
           if [ -f "test-image_${{ needs.Build.outputs.app_version }}.tar" ]; then
-            echo "Artifact found"
+           echo "Artifact found"
           else
-            echo "Artifact not found"
-            exit 1
+           echo "Artifact not found"
+           exit 1
           fi
 
       - name: Load Docker Image
@@ -71,17 +71,27 @@ jobs:
         run: |
           docker images
 
-      - name: Print Image Details
+      - name: Debug: Print Image Details
         run: |
           echo "username: $username"
           echo "image_name: $image_name"
-          echo "app_version: ${{ needs.Build.outputs.app_version }}"
+          echo "app_version: ${{ needs.Build.outputs.app_version }}
+
+      - name: Stop Containers Using Port 8082 (if any)
+        run: |
+        CONTAINER_ID=$(docker ps --filter "publish=8082" -q)
+        if [ -n "$CONTAINER_ID" ]; then
+          echo "Stopping container $CONTAINER_ID"
+          docker stop $CONTAINER_ID
+        else
+          echo "No container found using port 8082"
+        fi
 
       - name: Run Docker Containers
         run: |
-         echo "Running container with image: $username/$image_name:${{ needs.Build.outputs.app_version }}"
-         docker run -d -p 8082:80 $username/$image_name:${{ needs.Build.outputs.app_version }}
-        
+          echo "Running container with image: $username/$image_name:${{ needs.Build.outputs.app_version }}"
+          docker run -d -p 8082:80 $username/$image_name:${{ needs.Build.outputs.app_version }}
+
       - name: Send email notification
         uses: dawidd6/action-send-mail@v3
         with:
