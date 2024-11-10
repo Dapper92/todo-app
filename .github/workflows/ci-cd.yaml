@@ -62,15 +62,15 @@ jobs:
 
       - name: Load Docker Image
         run: |
-            docker load -i test-image_${{ needs.Build.outputs.app_version }}.tar
+          docker load -i test-image_${{ needs.Build.outputs.app_version }}.tar
 
       - name: Verify Loaded Docker Image
         run: |
-        docker images
+          docker images
 
       - name: Run Docker Containers
         run: |
-        docker run -d -p 8081:80 $username/$image_name:${{ needs.Build.outputs.app_version }}
+          docker run -d -p 8081:80 $username/$image_name:${{ needs.Build.outputs.app_version }}
 
       - name: Send email notification
         uses: dawidd6/action-send-mail@v3
