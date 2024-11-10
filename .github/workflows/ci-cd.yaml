@@ -43,21 +43,26 @@ jobs:
     name: Deploy Docker Image
     runs-on: self-hosted
     needs: Build
+    env:
+      username: dapper01
+      image_name: test-image
     steps:
       - name: Download Docker Image Artifact
         uses: actions/download-artifact@v4
         with:
           name: docker-image
           path: .
+
       - name: Verify Artifact Download
         run: |
           ls -al
-         if [ -f "test-image_${{ needs.Build.outputs.app_version }}.tar" ]; then
-           echo "Artifact found"
-         else
-           echo "Artifact not found"
-           exit 1
+          if [ -f "test-image_${{ needs.Build.outputs.app_version }}.tar" ]; then
+            echo "Artifact found"
+          else
+            echo "Artifact not found"
+            exit 1
           fi
+
       - name: Load Docker Image
         run: |
           docker load -i test-image_${{ needs.Build.outputs.app_version }}.tar
@@ -65,16 +70,18 @@ jobs:
       - name: Verify Loaded Docker Image
         run: |
           docker images
-      - name:
-        Debug: Print Image Details
+
+      - name: Debug: Print Image Details
         run: |
           echo "username: $username"
           echo "image_name: $image_name"
           echo "app_version: ${{ needs.Build.outputs.app_version }}"
+
       - name: Run Docker Containers
         run: |
           echo "Running container with image: $username/$image_name:${{ needs.Build.outputs.app_version }}"
           docker run -d -p 8081:80 $username/$image_name:${{ needs.Build.outputs.app_version }}
+
       - name: Send email notification
         uses: dawidd6/action-send-mail@v3
         with:
