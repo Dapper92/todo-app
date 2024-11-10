@@ -51,7 +51,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: docker-image
-          path: .
+          path: 
       - name: Verify Artifact Download
         run: |
           ls -al
