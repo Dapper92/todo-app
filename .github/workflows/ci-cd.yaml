@@ -71,11 +71,11 @@ jobs:
         run: |
           docker images
 
-      - name: Print Image Details
+      - name: Debug: Print Image Details
         run: |
           echo "username: $username"
           echo "image_name: $image_name"
-          echo "app_version: ${{ needs.Build.outputs.app_version }}
+          echo "app_version: ${{ needs.Build.outputs.app_version }}"
 
       - name: Stop Containers Using Port 8082 (if any)
         run: |
