@@ -55,10 +55,10 @@ jobs:
           ls -al
           if [ -f "test-image_${{ needs.Build.outputs.app_version }}.tar" ]; then
            echo "Artifact found"
-        else
+          else
            echo "Artifact not found"
            exit 1
-         fi
+           fi
 
       - name: Load Docker Image
           run: |
