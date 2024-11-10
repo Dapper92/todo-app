@@ -68,7 +68,8 @@ jobs:
       run: |
         docker images
 
-    - name: Debug: Print Image Details
+    - name:
+      Debug: Print Image Details
       run: |
         echo "username: $username"
         echo "image_name: $image_name"
@@ -76,7 +77,6 @@ jobs:
 
     - name: Run Docker Containers
       run: |
-        # Make sure the image tag is valid and formatted correctly
         echo "Running container with image: $username/$image_name:${{ needs.Build.outputs.app_version }}"
         docker run -d -p 8081:80 $username/$image_name:${{ needs.Build.outputs.app_version }}
 
