@@ -51,16 +51,17 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: docker-image
+          path: .
+
       - name: Verify Artifact Download
         run: |
           ls -al
-         if [ -f "test-image_${{ needs.Build.outputs.app_version }}.tar" ]; then
-          echo "Artifact found"
-         else
-          echo "Artifact not found"
-         exit 1
-         fi
-
+          if [ -f "test-image_${{ needs.Build.outputs.app_version }}.tar" ]; then
+            echo "Artifact found"
+          else
+            echo "Artifact not found"
+            exit 1
+          fi
 
       - name: Load Docker Image
         run: |
@@ -78,13 +79,13 @@ jobs:
 
       - name: Stop Containers Using Port 8082 (if any)
         run: |
-        CONTAINER_ID=$(docker ps --filter "publish=8082" -q)
-        if [ -n "$CONTAINER_ID" ]; then
-          echo "Stopping container $CONTAINER_ID"
-          docker stop $CONTAINER_ID
-        else
-          echo "No container found using port 8082"
-        fi
+          CONTAINER_ID=$(docker ps --filter "publish=8082" -q)
+          if [ -n "$CONTAINER_ID" ]; then
+            echo "Stopping container $CONTAINER_ID"
+            docker stop $CONTAINER_ID
+          else
+            echo "No container found using port 8082"
+          fi
 
       - name: Run Docker Containers
         run: |
