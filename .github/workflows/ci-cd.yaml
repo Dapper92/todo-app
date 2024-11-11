@@ -18,7 +18,7 @@ jobs:
         run: |
           TIMESTAMP=$(date +'%Y%m%d%H%M%S')
           VERSION="v${TIMESTAMP}_${RANDOM}"
-          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV  # Set environment variable
+          echo "APP_VERSION=$VERSION" >> $GITHUB_ENV  # Set environment variables
           echo "app_version=$VERSION" >> $GITHUB_OUTPUT  # Set job output
 
       - name: Build the Docker Image
