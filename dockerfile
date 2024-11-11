@@ -1,8 +1,8 @@
 FROM node:18-slim 
 
-WORKDIR /app/todo
+WORKDIR /app/todo/
 
-COPY . /app/todo/
+COPY . /app/todo/ 
 
 RUN npm install
 
